@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Person Detection using YOLOv5</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: white;
+            font-family: 'Arial', sans-serif;
+        }
+        .navbar {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+        }
+        .upload-container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 3rem;
+            border-radius: 15px;
+            margin-top: 3rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+        .output-container {
+            margin-top: 3rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+        .output-image {
+            max-width: 100%;
+            border-radius: 15px;
+        }
+        .btn-primary {
+            background: #ff6f61;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">Person Detection</a>
+        </div>
+    </nav>
+    <div class="container" style="padding-top: 80px;">
+        <div class="upload-container text-center">
+            <h1>Person Detection using YOLOv5</h1>
+            <p>Upload an image to detect persons in it.</p>
+            <input type="file" id="fileInput" accept="image/*" class="form-control mb-3">
+            <button class="btn btn-primary" onclick="uploadFile()">Detect Persons</button>
+        </div>
+        <div id="outputContainer" class="output-container text-center" style="display: none;">
+            <h2>Detection Results</h2>
+            <img id="outputImage" class="output-image" src="" alt="Output Image">
+        </div>
+    </div>
+    <script>
+        async function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const outputContainer = document.getElementById('outputContainer');
+            const outputImage = document.getElementById('outputImage');
+
+            if (fileInput.files.length === 0) {
+                alert("Please select a file!");
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/detect', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Detection failed');
+                }
+
+                const data = await response.json();
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                outputImage.src = data.output_image + "?t=" + new Date().getTime();
+                outputContainer.style.display = 'block';
+            } catch (error) {
+                console.error(error);
+                alert("Error: " + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
